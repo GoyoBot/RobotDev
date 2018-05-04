@@ -52,6 +52,14 @@ void Robot::avanzaDcha(unsigned int giro, unsigned long time) {
 	delay(time);
 }
 
+void Robot::avanzaGiro(int giro, unsigned long time) {
+	if (giro > 0) {
+		avanzaDcha(giro, time);
+	} else {
+		avanzaIzda(giro, time);
+	}
+}
+
 void Robot::giraIzda90() {
 	// Valores de velocidad y delay por ensayo-error
 	const int vel = 70;

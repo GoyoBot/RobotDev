@@ -59,6 +59,9 @@ public:
 	/// Avanza y gira a la dcha. Intensidad del `giro` entre [0, 512]
 	void avanzaDcha(unsigned int giro, unsigned long time = 0);
 	
+	/// Avanza y gira a la izda (-250) o dcha (250). Intensidad del `giro` entre [-512, 512]
+	void avanzaGiro(int giro, unsigned long time = 0);
+	
 	// Estos métodos bloquean la ejecución hasta que se haya completado el giro
 	void giraIzda90();  ///< Giro completo de 90° a la izda
 	void giraDcha90();  ///< Giro completo de 90° a la dcha
