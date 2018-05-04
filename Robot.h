@@ -28,8 +28,8 @@ typedef struct RobotPins {
 	/// Sensores Ultra Sonido. Con la biblioteca NewPing, trigger y echo pueden estar en el mismo pin
 	struct {
 		US_Pins I = {10, 10};
-		US_Pins C = {11, 11};
-		US_Pins D = {12, 12};
+		US_Pins C = {12, 12};
+		US_Pins D = {11, 11};
 	} US;
 	
 	// Sensores Infrarrojo. Pines analógicos Ax.
