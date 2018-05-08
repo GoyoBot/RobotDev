@@ -1,6 +1,8 @@
 #ifndef ROBOT_H
 #define ROBOT_H
 
+#include <MPU6050_tockn.h>
+
 #include "Motor.h"
 #include "UltraSound.h"
 
@@ -46,6 +48,9 @@ class Robot {
 public:
 	Robot(const RobotPins p = DefaultPins);
 	
+	/// Configura el robot. Llamar en el setup() principal
+	void setup();
+	
 	/// Actualiza el hardware interno. Llamar en cada ciclo loop()
 	void update();
 	
@@ -75,6 +80,9 @@ public:
 	bool irSobreBlanco(int ir);
 	int irData(int ir);
 	
+	/// Obtener el ángulo del robot respecto a la calibración inicial en el setup() del robot
+	float angulo();
+	
 	// Motores
 	Motor motorI;
 	Motor motorD;
@@ -83,6 +91,9 @@ public:
 	UltraSound ultraSonidoI;
 	UltraSound ultraSonidoC;
 	UltraSound ultraSonidoD;
+	
+	// Sensor MPU6050: acelerómetro/giroscopio
+	MPU6050 mpu6050;
 	
 	const RobotPins pins;  ///< Acceso a los pines
 	

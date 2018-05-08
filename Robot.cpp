@@ -1,5 +1,6 @@
-#include "Robot.h"
 #include <Arduino.h>
+#include <Wire.h>
+#include "Robot.h"
 
 /// Configura todo el robot estableciendo los valores de config de sensores y motores
 Robot::Robot(RobotPins p):
@@ -8,14 +9,24 @@ Robot::Robot(RobotPins p):
 	ultraSonidoD ( UltraSound(p.US.D.echo, p.US.D.trigger) ),
 	motorI ( Motor(p.motor.IN1.I, p.motor.IN2.I, p.motor.PWM.I, p.motor.offset.I, p.motor.STBY) ),
 	motorD ( Motor(p.motor.IN1.D, p.motor.IN2.D, p.motor.PWM.D, p.motor.offset.D, p.motor.STBY) ),
-	pins (p)
+	mpu6050 ( Wire ),
+	pins ( p )
 {
+}
+
+void Robot::setup() {
+	// Setup I2C connection for mpu6050
+	Wire.begin();
+	
+	mpu6050.begin();
+	mpu6050.calcGyroOffsets(true);
 }
 
 void Robot::update() {
 	ultraSonidoI.update();
 	ultraSonidoC.update();
 	ultraSonidoD.update();
+	mpu6050.update();
 }
 
 void Robot::avanza(unsigned long time) {
@@ -101,6 +112,9 @@ int Robot::irData(int ir) {
 	return analogRead(ir);
 }
 
+float Robot::angulo() {
+	mpu6050.getAngleZ();
+}
 
 void Robot::printUltraSonido() {
 	Serial.print(ultraSonidoI.distancia());
