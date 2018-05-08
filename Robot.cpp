@@ -177,15 +177,12 @@ float Robot::angulo() {
 }
 
 float Robot::anguloAbsoluto() {
-	float angulo = angulo();
-	bool esNegativo = angulo < 0.0;
-	angulo = abs(angulo);
-	float nuevoAngulo = angulo - (angulo % 360.0);
-	if (esNegativo) {
-		return 360 - nuevoAngulo;
-	} else {
-		return nuevoAngulo;
-	}
+	float ang = angulo();
+    if (ang < 0.0) {
+        return 360.0 + fmod(ang, 360.0);
+    } else {
+        return fmod(ang, 360.0);
+    }
 }
 
 void Robot::printUltraSonido() {
