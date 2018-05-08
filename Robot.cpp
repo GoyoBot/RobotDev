@@ -176,6 +176,18 @@ float Robot::angulo() {
 	return -1.0 * mpu6050.getAngleZ();
 }
 
+float Robot::anguloAbsoluto() {
+	float angulo = angulo();
+	bool esNegativo = angulo < 0.0;
+	angulo = abs(angulo);
+	float nuevoAngulo = angulo - (angulo % 360.0);
+	if (esNegativo) {
+		return 360 - nuevoAngulo;
+	} else {
+		return nuevoAngulo;
+	}
+}
+
 void Robot::printUltraSonido() {
 	Serial.print(ultraSonidoI.distancia());
 	Serial.print("\t");

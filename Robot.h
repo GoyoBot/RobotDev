@@ -95,6 +95,7 @@ public:
 	 * @return Número positivo: giro derecha. Negativo: izquierda.
 	 */
 	float angulo();
+	float anguloAbsoluto();
 	
 	// Motores
 	Motor motorI;
