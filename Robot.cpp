@@ -71,12 +71,48 @@ void Robot::avanzaGiro(int giro, unsigned long time) {
 	}
 }
 
+/**
+ * Gira a velocidad constante durante un tiempo definido.
+ * Muy poco preciso: según se agotan las pilas, la velocidad de los motores es menor.
+ */
+/*
 void Robot::giraIzda90() {
 	// Valores de velocidad y delay por ensayo-error
 	const int vel = 70;
 	motorI.drive(-vel);
 	motorD.drive(vel);
 	delay(500);
+}
+*/
+
+void Robot::giraIzda90() {
+	DEBUG_PRINTLN("## giraIzda90");
+
+	const unsigned long initMillis = millis();
+	const float anguloInicial = angulo();
+	const float anguloFinal = anguloInicial - 90.0;
+	const int velocidad = 70;
+	
+	while (angulo() > anguloFinal) {
+		DEBUG_PRINT("## giraIzda90 ");
+		DEBUG_PRINTLN(angulo());
+		
+		motorI.drive(velocidad);
+		motorD.drive(-velocidad);
+		delay(50);
+		mpu6050.update();
+		
+		// Salimos en caso de error
+		if (angulo() > anguloInicial + 10.0) {
+			DEBUG_PRINTLN("## giraIzda90 ERROR! giro contrario");
+			return;
+		}
+		if (millis() - initMillis > 10000) {
+			DEBUG_PRINTLN("## giraIzda90 ERROR! demasiado tiempo");
+			return;
+		}
+	}
+	DEBUG_PRINTLN("## giraIzda90 fin");
 }
 
 void Robot::giraDcha90() {
@@ -113,7 +149,8 @@ int Robot::irData(int ir) {
 }
 
 float Robot::angulo() {
-	mpu6050.getAngleZ();
+	// Ajuste del signo según colocación del sensor.
+	return -1.0 * mpu6050.getAngleZ();
 }
 
 void Robot::printUltraSonido() {

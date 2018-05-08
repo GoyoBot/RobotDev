@@ -6,6 +6,15 @@
 #include "Motor.h"
 #include "UltraSound.h"
 
+#define DEBUG 1
+
+#ifdef DEBUG
+ #define DEBUG_PRINT(x)     Serial.print(x)
+ #define DEBUG_PRINTLN(x)   Serial.println(x)
+#else
+ #define DEBUG_PRINT(x)
+ #define DEBUG_PRINTLN(x)
+#endif
 
 // Pines de tipo izquierda-derecha
 typedef struct {
@@ -80,7 +89,11 @@ public:
 	bool irSobreBlanco(int ir);
 	int irData(int ir);
 	
-	/// Obtener el ángulo del robot respecto a la calibración inicial en el setup() del robot
+	/**
+	 * Obtener el ángulo del robot respecto a la calibración inicial en el setup() del robot.
+	 * Sólo se actualiza tras hacer update().
+	 * @return Número positivo: giro derecha. Negativo: izquierda.
+	 */
 	float angulo();
 	
 	// Motores

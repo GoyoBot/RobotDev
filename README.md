@@ -20,6 +20,7 @@ Es necesario **llamar siempre a `update()` al comenzar el `loop()`**.
     Robot robot;
 
     void setup() {
+        robot.setup();
     }
 
     void loop() {
