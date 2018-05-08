@@ -107,7 +107,7 @@ void Robot::giraIzda90() {
 			DEBUG_PRINTLN("## giraIzda90 ERROR! giro contrario");
 			return;
 		}
-		if (millis() - initMillis > 10000) {
+		if (millis() - initMillis > 5000) {
 			DEBUG_PRINTLN("## giraIzda90 ERROR! demasiado tiempo");
 			return;
 		}
@@ -116,10 +116,33 @@ void Robot::giraIzda90() {
 }
 
 void Robot::giraDcha90() {
-	const int vel = 70;
-	motorI.drive(vel);
-	motorD.drive(-vel);
-	delay(500);
+	DEBUG_PRINTLN("## giraDcha90");
+
+	const unsigned long initMillis = millis();
+	const float anguloInicial = angulo();
+	const float anguloFinal = anguloInicial + 90.0;
+	const int velocidad = 70;
+	
+	while (angulo() < anguloFinal) {
+		DEBUG_PRINT("## giraDcha90 ");
+		DEBUG_PRINTLN(angulo());
+		
+		motorI.drive(-velocidad);
+		motorD.drive(velocidad);
+		delay(50);
+		mpu6050.update();
+		
+		// Salimos en caso de error
+		if (angulo() < anguloInicial - 10.0) {
+			DEBUG_PRINTLN("## giraDcha90 ERROR! giro contrario");
+			return;
+		}
+		if (millis() - initMillis > 5000) {
+			DEBUG_PRINTLN("## giraDcha90 ERROR! demasiado tiempo");
+			return;
+		}
+	}
+	DEBUG_PRINTLN("## giraDcha90 fin");
 }
 
 void Robot::gira180() {
