@@ -80,6 +80,7 @@ public:
 	void giraIzda90();  ///< Giro completo de 90° a la izda
 	void giraDcha90();  ///< Giro completo de 90° a la dcha
 	void gira180();     ///< Giro de 180°
+	void giraAngulo(float angulo); ///< Giro de `angulo` grados: positivo dcha, negativo izda
 	
 	/// Nueva velocidad del robot entre [0, 512]
 	void setVelocidad(unsigned int velocidad);
