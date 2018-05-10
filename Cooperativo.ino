@@ -19,9 +19,9 @@ void setup()
 void loop()
 {
     robot.update(); // Siempre al comenzar el loop
+    //comprobarObstaculos();
     comprobarDireccion();
-    comprobarObstaculos();
-    comprobarLineas();
+    //comprobarLineas();
 
     robot.avanza();
 }
@@ -57,12 +57,12 @@ void rectificarAngulo()
         Serial.print("ar: " + String(ang));
         if (ang > 0)
         {
-            robot.avanzaDcha(512, 10);
+            robot.avanzaDcha(512, 1);
             Serial.println(" DERECHA");
         }
         else
         {
-            robot.avanzaIzda(512, 10);
+            robot.avanzaIzda(512, 1);
             Serial.println(" IZQUIERDA");
         }
         robot.update();
@@ -89,14 +89,52 @@ void  comprobarObstaculos(){
     }
 }
 
-void evitarObstaculos(bool dcha){
-    bool evitado;
+void evitarObstaculos(bool direccionGiro) { // true -> derecha --- false -> izquierda
+
+    if (direccionGiro) {
+        robot.giraDcha90();
+    } else {
+        robot.giraIzda90();        
+    }
+
+    bool direccionAComprobar = !direccionGiro; // true -> izquierda --- fasle -> derecha
+
+    bool objetoDetectado = comprobarObjetoID(direccionAComprobar);
+
+    while (objetoDetectado) {
+        robot.avanza();
+        robot.update();
+
+        comprobarObstaculos();
+        // Comprobar lineas frontales
+
+        objetoDetectado = comprobarObjetoID(direccionAComprobar);
+    }
+
+    delay(50);
+
+    if (!direccionGiro) {
+        robot.giraDcha90();
+    } else {
+        robot.giraIzda90();        
+    }
+
+}
+
+bool comprobarObjetoID(bool direccion) {
+    if (direccion) {
+        return robot.ultraSonidoI.distancia() < dist;
+    } else {
+        return robot.ultraSonidoD.distancia() < dist;
+    }
+}
+
+/*void evitarObstaculos(bool dcha){
+    bool evitado = dcha;
     if(dcha){
         robot.giraDcha90();
-        evitado = !(robot.ultraSonidoI.distancia() < dist);
     }else{
         robot.giraIzda90();
-        evitado = !(robot.ultraSonidoD.distancia() < dist);
     }
     while(!evitado){
         robot.update();
@@ -117,7 +155,7 @@ void evitarObstaculos(bool dcha){
     }
     Delay(50);
     comprobarDireccion();
-}
+}*/
 
 
 // -------------------- FinObstaculos --------------------
