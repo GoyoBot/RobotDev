@@ -34,6 +34,7 @@ void Motor::fwd(int speed)
 {
    digitalWrite(In1, HIGH);
    digitalWrite(In2, LOW);
+   speed = constrain(speed, 0, 255);
    analogWrite(PWM, speed);
 
 }
@@ -42,6 +43,7 @@ void Motor::rev(int speed)
 {
    digitalWrite(In1, LOW);
    digitalWrite(In2, HIGH);
+   speed = constrain(speed, 0, 255);
    analogWrite(PWM, speed);
 }
 

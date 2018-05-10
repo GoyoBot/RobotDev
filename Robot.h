@@ -33,7 +33,7 @@ typedef struct RobotPins {
 		IzdaDcha IN2 = {4, 8};
 		IzdaDcha PWM = {5, 6};
 		int STBY = 9;
-		IzdaDcha offset = {1, 1}; //< 1 o -1 para cambiar el giro
+		IzdaDcha offset = {-1, -1}; //< 1 o -1 para cambiar el giro
 	} motor;
 	
 	/// Sensores Ultra Sonido. Con la biblioteca NewPing, trigger y echo pueden estar en el mismo pin
@@ -80,6 +80,7 @@ public:
 	void giraIzda90();  ///< Giro completo de 90° a la izda
 	void giraDcha90();  ///< Giro completo de 90° a la dcha
 	void gira180();     ///< Giro de 180°
+	void giraAngulo(float angulo); ///< Giro de `angulo` grados: positivo dcha, negativo izda
 	
 	/// Nueva velocidad del robot entre [0, 512]
 	void setVelocidad(unsigned int velocidad);

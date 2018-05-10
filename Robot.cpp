@@ -85,69 +85,56 @@ void Robot::giraIzda90() {
 }
 */
 
-void Robot::giraIzda90() {
-	DEBUG_PRINTLN("## giraIzda90");
+/**
+ * Gira el robot cierto `anguloGiro` (positivo dcha, negativo izda)
+ * El algoritmo
+ */
+void Robot::giraAngulo(float anguloGiro) {
+	DEBUG_PRINTLN("## giraAngulo " + String(anguloGiro));
 
 	const unsigned long initMillis = millis();
 	const float anguloInicial = angulo();
-	const float anguloFinal = anguloInicial - 90.0;
-	const int velocidad = 70;
+	const float anguloFinal = anguloInicial + anguloGiro;
+	const float minAngulo = 2.0;
 	
-	while (angulo() > anguloFinal) {
-		DEBUG_PRINT("## giraIzda90 ");
-		DEBUG_PRINTLN(angulo());
+	while (abs(angulo() - anguloFinal) > minAngulo) {
+		const float anguloRestante = angulo() - anguloFinal;
 		
-		motorI.drive(velocidad);
-		motorD.drive(-velocidad);
-		delay(50);
-		mpu6050.update();
+		/* Multiplicar el ángulo por un factor para obtener la velocidad.
+		 * Así, cuanto más ángulo nos quede por girar, más velocidad habrá,
+		 * y si queda poco ángulo giramos más lento para mayor precisión.
+		 * Ej: max velocidad = 255. Ángulo 90° a max velocidad => factor = 255/90 = 2.83
+		 *     Pero 2.83 resulta demasiado rápido. Con factor de 1.0 es ok.
+		 */
+		int velocidad = anguloRestante * 1.0;
 		
-		// Salimos en caso de error
-		if (angulo() > anguloInicial + 10.0) {
-			DEBUG_PRINTLN("## giraIzda90 ERROR! giro contrario");
-			return;
+		// A menos de cierta velocidad los motores no se mueven
+		if (velocidad > 0) {
+			velocidad = max(velocidad, 70);
+		} else {
+			velocidad = min(velocidad, -70);
 		}
-		if (millis() - initMillis > 5000) {
-			DEBUG_PRINTLN("## giraIzda90 ERROR! demasiado tiempo");
-			return;
-		}
-	}
-	DEBUG_PRINTLN("## giraIzda90 fin");
-}
-
-void Robot::giraDcha90() {
-	DEBUG_PRINTLN("## giraDcha90");
-
-	const unsigned long initMillis = millis();
-	const float anguloInicial = angulo();
-	const float anguloFinal = anguloInicial + 90.0;
-	const int velocidad = 70;
-	
-	while (angulo() < anguloFinal) {
-		DEBUG_PRINT("## giraDcha90 ");
-		DEBUG_PRINTLN(angulo());
+		velocidad = constrain(velocidad, -255, 255);
 		
+		DEBUG_PRINTLN("## giraAngulo a: " + String(anguloRestante) + "\tv: " + String(velocidad));
 		motorI.drive(-velocidad);
 		motorD.drive(velocidad);
 		delay(50);
 		mpu6050.update();
-		
-		// Salimos en caso de error
-		if (angulo() < anguloInicial - 10.0) {
-			DEBUG_PRINTLN("## giraDcha90 ERROR! giro contrario");
-			return;
-		}
-		if (millis() - initMillis > 5000) {
-			DEBUG_PRINTLN("## giraDcha90 ERROR! demasiado tiempo");
-			return;
-		}
 	}
-	DEBUG_PRINTLN("## giraDcha90 fin");
+	DEBUG_PRINTLN("## giraAngulo fin");
+}
+
+void Robot::giraIzda90() {
+	giraAngulo(-90.0);
+}
+
+void Robot::giraDcha90() {
+	giraAngulo(90.0);
 }
 
 void Robot::gira180() {
-	giraDcha90();
-	giraDcha90();
+	giraAngulo(180.0);
 }
 
 void Robot::setVelocidad(unsigned int velocidad) {
