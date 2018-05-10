@@ -80,8 +80,43 @@ void rectificarAngulo()
 
 
 // -------------------- Obstaculos --------------------
+
+int dist = 10;
+
 void  comprobarObstaculos(){
-    
+    if(robot.ultraSonidoC.distancia() < dist){
+        evitarObstaculos(!(robot.ultraSonidoD.distancia() < dist));
+    }
+}
+
+void evitarObstaculos(bool dcha){
+    bool evitado;
+    if(dcha){
+        robot.giraDcha90();
+        evitado = !(robot.ultraSonidoI.distancia() < dist);
+    }else{
+        robot.giraIzda90();
+        evitado = !(robot.ultraSonidoD.distancia() < dist);
+    }
+    while(!evitado){
+        robot.update();
+        robot.avanza();
+        if(comprobarLineas()){
+            dcha = !dcha;
+            robot.avanza();
+        }
+        if(dcha){
+            if(!(robot.ultraSonidoI.distancia() < dist)) {
+                evitado = true;
+            }
+        }else{
+            if(!(robot.ultraSonidoD.distancia() < dist)){
+                evitado = true;
+            }
+        }
+    }
+    Delay(50);
+    comprobarDireccion();
 }
 
 
@@ -103,9 +138,14 @@ bool sensores[6] = {false, false, false, false, false, false};
 
 // comprueba que se ha detectado una linea a través de todos los sensores por orden
 // en menos de 2 segundos
-void comprobarLineas()
+bool comprobarLineas()
 {
     //----------------------LineasFrontales---------------
+    if (timerId != -1 && timer.isEnabled(timerId))
+        {
+            timerId = timer.setTimeout(2000, resetFinRecorrido);
+        }
+
 
     if(!(sensores[0])){
         sensores[0] = robot.irSobreNegro(robot.pins.IR[0]);
@@ -129,6 +169,7 @@ void comprobarLineas()
             else
             {
                 reedireccionPorLineaFrontal();
+                return true;
             }
     }
 
@@ -141,7 +182,7 @@ void comprobarLineas()
         reedireccionPorLineaLateral(true);
 
     }
-
+    return false;
 
 
 /*
@@ -210,7 +251,7 @@ void reedireccionPorLineaLateral(bool esDcha){
 
 void reedireccionPorLineaFrontal()
 {
-    if(ultraSonidoD.distancia > 10){ //Calibrar la distancia
+    if(robot.ultraSonidoD.distancia() > 10){ //Calibrar la distancia
         Robot.gira180(); //Gira 180º a la derecha
     }else{
         Robot.giraIzda90();
