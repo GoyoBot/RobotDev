@@ -95,7 +95,7 @@ void Robot::giraAngulo(float anguloGiro) {
 	const unsigned long initMillis = millis();
 	const float anguloInicial = angulo();
 	const float anguloFinal = anguloInicial + anguloGiro;
-	const float minAngulo = 1.5;
+	const float minAngulo = 2.0;
 	
 	while (abs(angulo() - anguloFinal) > minAngulo) {
 		const float anguloRestante = angulo() - anguloFinal;
@@ -117,8 +117,8 @@ void Robot::giraAngulo(float anguloGiro) {
 		velocidad = constrain(velocidad, -255, 255);
 		
 		DEBUG_PRINTLN("## giraAngulo a: " + String(anguloRestante) + "\tv: " + String(velocidad));
-		motorI.drive(velocidad);
-		motorD.drive(-velocidad);
+		motorI.drive(-velocidad);
+		motorD.drive(velocidad);
 		delay(50);
 		mpu6050.update();
 	}
