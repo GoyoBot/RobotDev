@@ -19,7 +19,8 @@ void Robot::setup() {
 	Wire.begin();
 	
 	mpu6050.begin();
-	mpu6050.calcGyroOffsets(true);
+	// mpu6050.calcGyroOffsets(true);
+	mpu6050.setGyroOffsets(-1.72, 3.76, 3.76);
 }
 
 void Robot::update() {
@@ -119,18 +120,70 @@ void Robot::giraAngulo(float anguloGiro) {
 		DEBUG_PRINTLN("## giraAngulo a: " + String(anguloRestante) + "\tv: " + String(velocidad));
 		motorI.drive(-velocidad);
 		motorD.drive(velocidad);
-		delay(50);
+		delay(500);
 		mpu6050.update();
 	}
 	DEBUG_PRINTLN("## giraAngulo fin");
 }
 
 void Robot::giraIzda90() {
-	giraAngulo(-90.0);
+	DEBUG_PRINTLN("## giraIzda90");
+
+	const unsigned long initMillis = millis();
+	const float anguloInicial = angulo();
+	const float anguloFinal = anguloInicial - 90.0;
+	const int velocidad = 70;
+	
+	while (angulo() > anguloFinal) {
+		DEBUG_PRINT("## giraIzda90 ");
+		DEBUG_PRINTLN(angulo());
+		
+		motorI.drive(-velocidad);
+		motorD.drive(velocidad);
+		delay(50);
+		mpu6050.update();
+		
+		// Salimos en caso de error
+		if (angulo() > anguloInicial + 10.0) {
+			DEBUG_PRINTLN("## giraIzda90 ERROR! giro contrario");
+			return;
+		}
+		if (millis() - initMillis > 5000) {
+			DEBUG_PRINTLN("## giraIzda90 ERROR! demasiado tiempo");
+			return;
+		}
+	}
+	DEBUG_PRINTLN("## giraIzda90 fin");
 }
 
 void Robot::giraDcha90() {
-	giraAngulo(90.0);
+	DEBUG_PRINTLN("## giraDcha90");
+
+	const unsigned long initMillis = millis();
+	const float anguloInicial = angulo();
+	const float anguloFinal = anguloInicial + 90.0;
+	const int velocidad = 70;
+	
+	while (angulo() < anguloFinal) {
+		DEBUG_PRINT("## giraDcha90 ");
+		DEBUG_PRINTLN(angulo());
+		
+		motorI.drive(velocidad);
+		motorD.drive(-velocidad);
+		delay(50);
+		mpu6050.update();
+		
+		// Salimos en caso de error
+		if (angulo() < anguloInicial - 10.0) {
+			DEBUG_PRINTLN("## giraDcha90 ERROR! giro contrario");
+			return;
+		}
+		if (millis() - initMillis > 5000) {
+			DEBUG_PRINTLN("## giraDcha90 ERROR! demasiado tiempo");
+			return;
+		}
+	}
+	DEBUG_PRINTLN("## giraDcha90 fin");
 }
 
 void Robot::gira180() {
