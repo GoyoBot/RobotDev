@@ -1,16 +1,13 @@
 #include "Robot.h"
-#include "SimpleTimer.h"
 
 Robot robot;
 
 float angulo = 0.0;
-float offset = 5.0;
-
-SimpleTimer timer;
-int timerId = -1;
+float offset = 7.0;
 
 void setup()
 {
+    robot.setVelocidad(70);
     // Serial.begin(115200);
     Serial.begin(9600);
     robot.setup();
@@ -19,7 +16,8 @@ void setup()
 void loop()
 {
     robot.update(); // Siempre al comenzar el loop
-    //comprobarObstaculos();
+    
+    comprobarObstaculos();
     comprobarDireccion();
     //comprobarLineas();
 
@@ -29,18 +27,17 @@ void loop()
 // -------------------- Dirección --------------------
 void comprobarDireccion()
 {
-    if (abs(anguloRectificacion()) > offset)
+    if (abs(anguloRectificacion(angulo)) > offset)
     { // Si no esta colocado, para y recoloca
         robot.para();
-        rectificarAngulo();
+        rectificarAngulo(angulo);
     }
 }
 
 // Comprueba que el robot esta mirando en la dirección correcta con un offset
-float anguloRectificacion()
+float anguloRectificacion(float original)
 {
     float actual = robot.anguloAbsoluto();
-    float original = angulo;
     if (abs(original - actual) > 180)
     {
         original += 360;
@@ -49,25 +46,29 @@ float anguloRectificacion()
 }
 
 // Para el robot y lo rota hasta que la dirección es la correcta
-void rectificarAngulo()
+void rectificarAngulo(float original)
 {
-    float ang = anguloRectificacion();
+    float ang = anguloRectificacion(original);
     while (abs(ang) > offset)
     {
-        Serial.print("ar: " + String(ang));
+        //Serial.print("ar: " + String(ang));
         if (ang > 0)
         {
-            robot.avanzaDcha(512, 1);
-            Serial.println(" DERECHA");
+            //robot.avanzaDcha(512, 1);
+            robot.motorI.drive(70);
+            robot.motorD.drive(0);
+            //Serial.println(" DERECHA");
         }
         else
         {
-            robot.avanzaIzda(512, 1);
-            Serial.println(" IZQUIERDA");
+            //robot.avanzaIzda(512, 1);
+            robot.motorI.drive(0);
+            robot.motorD.drive(70);
+            //Serial.println(" IZQUIERDA");
         }
+        delay(10);
         robot.update();
-        ang = anguloRectificacion();
-        Serial.println("anguloact: " + String(ang));
+        ang = anguloRectificacion(original);
     }
 }
 
@@ -84,20 +85,28 @@ void rectificarAngulo()
 int dist = 10;
 
 void  comprobarObstaculos(){
+    Serial.println(robot.ultraSonidoC.distancia());
     if(robot.ultraSonidoC.distancia() < dist){
+        Serial.println("Detectado");
         evitarObstaculos(!(robot.ultraSonidoD.distancia() < dist));
     }
 }
 
 void evitarObstaculos(bool direccionGiro) { // true -> derecha --- false -> izquierda
 
+  robot.para();
     if (direccionGiro) {
         robot.giraDcha90();
+        robot.giraDcha90();///////////////////
     } else {
-        robot.giraIzda90();        
+        robot.giraIzda90();    
+        robot.giraIzda90();    
     }
+    delay(1000);
+    robot.para();
+    delay(1000);
 
-    bool direccionAComprobar = !direccionGiro; // true -> izquierda --- fasle -> derecha
+    bool direccionAComprobar = !direccionGiro; // true -> derecha --- fasle -> izquierda
 
     bool objetoDetectado = comprobarObjetoID(direccionAComprobar);
 
@@ -105,7 +114,7 @@ void evitarObstaculos(bool direccionGiro) { // true -> derecha --- false -> izqu
         robot.avanza();
         robot.update();
 
-        comprobarObstaculos();
+        // comprobarObstaculos();
         // Comprobar lineas frontales
 
         objetoDetectado = comprobarObjetoID(direccionAComprobar);
@@ -123,39 +132,11 @@ void evitarObstaculos(bool direccionGiro) { // true -> derecha --- false -> izqu
 
 bool comprobarObjetoID(bool direccion) {
     if (direccion) {
-        return robot.ultraSonidoI.distancia() < dist;
+        return robot.ultraSonidoD.distancia() < 15;////////// Deberia ser mayor por si se aleja del objeto
     } else {
-        return robot.ultraSonidoD.distancia() < dist;
+        return robot.ultraSonidoI.distancia() < 15;////////////
     }
 }
-
-/*void evitarObstaculos(bool dcha){
-    bool evitado = dcha;
-    if(dcha){
-        robot.giraDcha90();
-    }else{
-        robot.giraIzda90();
-    }
-    while(!evitado){
-        robot.update();
-        robot.avanza();
-        if(comprobarLineas()){
-            dcha = !dcha;
-            robot.avanza();
-        }
-        if(dcha){
-            if(!(robot.ultraSonidoI.distancia() < dist)) {
-                evitado = true;
-            }
-        }else{
-            if(!(robot.ultraSonidoD.distancia() < dist)){
-                evitado = true;
-            }
-        }
-    }
-    Delay(50);
-    comprobarDireccion();
-}*/
 
 
 // -------------------- FinObstaculos --------------------
@@ -179,11 +160,8 @@ bool sensores[6] = {false, false, false, false, false, false};
 bool comprobarLineas()
 {
     //----------------------LineasFrontales---------------
-    if (timerId != -1 && timer.isEnabled(timerId))
-        {
-            timerId = timer.setTimeout(2000, resetFinRecorrido);
-        }
-
+   
+    
 
     if(!(sensores[0])){
         sensores[0] = robot.irSobreNegro(robot.pins.IR[0]);
@@ -198,66 +176,34 @@ bool comprobarLineas()
         sensores[3] = robot.irSobreNegro(robot.pins.IR[5]);
     }
 
-    if(sensores[0] $$ sensores[5]){ //Linea frontal
+    if(sensores[0] && sensores[5]){ //Linea frontal
         robot.para();
-            if (abs(anguloRectificacion()) <= offset)
+            if (abs(anguloRectificacion(angulo)) <= offset)
             { // Esta comprobación es necesaria puesto que solo en caso de que mire en la dirección correcta deberá ignorar la detección de lineas frontalmente
+                Serial.println("Final");
                 finalizarRecorido();
+                
             }
             else
             {
                 reedireccionPorLineaFrontal();
+                Serial.println("Lateral");
                 return true;
+                
             }
     }
 
-    if(sensores[0] && sensores[2]){ //Line lateral izquierda
+    if(sensores[0] && sensores[2] && !sensores[3]){ //Line lateral izquierda
 
         reedireccionPorLineaLateral(false);
 
-    }else if(sensores[5] && sensores[3]){ // Linea Lateral derecha
+    }else if(sensores[5] && sensores[3] && !sensores[2]){ // Linea Lateral derecha
 
         reedireccionPorLineaLateral(true);
 
     }
     return false;
 
-
-/*
-    if (!(sensores[2] && sensores[3]))
-    {
-        sensores[2] = robot.irSobreNegro(robot.pins.IR[3]);
-        sensores[3] = robot.irSobreNegro(robot.pins.IR[4]);
-
-        if (timerId != -1 && timer.isEnabled(timerId))
-        {
-            timerId = timer.setTimeout(2000, resetFinRecorrido);
-        }
-    }
-    else if (!(sensores[1] && sensores[4]))
-    {
-        sensores[1] = robot.irSobreNegro(robot.pins.IR[2]);
-        sensores[4] = robot.irSobreNegro(robot.pins.IR[5]);
-    }
-    else if (!(sensores[0] && sensores[5]))
-    {
-        sensores[0] = robot.irSobreNegro(robot.pins.IR[0]);
-        sensores[5] = robot.irSobreNegro(robot.pins.IR[7]);
-
-        if (sensores[0] && sensores[5])
-        {
-            robot.para();
-            if (abs(anguloRectificacion()) <= offset)
-            { // Esta comprobación es necesaria puesto que solo en caso de que mire en la dirección correcta deberá ignorar la detección de lineas frontalmente
-                finalizarRecorido();
-            }
-            else
-            {
-                reedireccionPorLineaFrontal();
-            }
-        }
-    }
-    */
 
 
    //----------------------FINLineasFrontales---------------
@@ -284,16 +230,23 @@ void finalizarRecorido()
 }
 
 void reedireccionPorLineaLateral(bool esDcha){
-
+  if(esDcha){
+    rectificarAngulo(270.0);
+  }else{
+    rectificarAngulo(90.0);
+  }
+  robot.avanza(10);
 }
 
 void reedireccionPorLineaFrontal()
 {
     if(robot.ultraSonidoD.distancia() > 10){ //Calibrar la distancia
-        Robot.gira180(); //Gira 180º a la derecha
+        robot.gira180(); //Gira 180º a la derecha
     }else{
-        Robot.giraIzda90();
-        Robot.giraIzda90();
+        robot.giraIzda90();
+        robot.giraIzda90();
+        robot.giraIzda90();
+        robot.giraIzda90();
     }
 }
 
